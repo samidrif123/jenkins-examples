@@ -1,0 +1,35 @@
+def notifySlack(status, extra = "") {
+    def header = "*${status}*: Job *${env.JOB_NAME}* [${env.BUILD_NUMBER}]\n  *job*: ${env.BUILD_URL}"
+    def colors = [
+        'STARTED': 'warning',
+        'FAILED': 'danger',
+        'SUCCESSFUL': 'good'
+    ]
+    slackSend(
+        teamDomain: 'slack-team-domain', 
+        channel: '#slack-channel',
+        tokenCredentialId: 'slackawsheroes',
+        color: colors[status],
+        message: "${header}\n${extra}"
+    )
+}
+
+node() {
+    def commitIDs = sh(script: bash("git --no-pager show -s --format='%h'"), returnStdout: true).trim()
+    def commitIDl = sh(script: bash("git --no-pager show -s --format='%H'"), returnStdout: true).trim()
+    def commitMsg = sh(script: bash("git log -1"), returnStdout: true)
+
+    notifySlack('STARTED', "  *commit*: https://github.com/ORG/REPO/commit/${commitIDl}\n```${commitMsg}```")
+    try{
+        stage("Stage"){
+            stage = "Update System Users"
+        }
+    } catch (e) {
+        notifySlack('FAILED', "```stage: ${stage}```")
+        throw e
+    }
+    stage("Slack Notify"){
+        commitMsg = sh(script: bash("git log -1 --pretty=format:%s"), returnStdout: true).trim()
+        notifySlack('SUCCESSFUL', "```${commitIDs} # ${commitMsg}```")
+    }
+}
