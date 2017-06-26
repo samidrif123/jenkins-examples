@@ -1,0 +1,30 @@
+- docker_info:
+
+- name: Ensure Project Folder Exits
+  file:
+    path: '{{ jenkins_home }}'
+    state: directory
+    owner: '{{ jenkins_uid }}'
+    group: '{{ jenkins_gid }}'
+
+# - name: Install Plugins
+#   docker_service:
+    # docker run --rm --privileged -e REF=/var/jenkins_home/plugins -v {{ jenkins_home }}:/var/jenkins_home \
+    #             {{ jenkins_docker_src }}:{{ jenkins_version }} \
+    #             /usr/local/bin/install-plugins.sh {{ plugins | unique | join (' ') }}
+
+- name: Copy Jenkins Docker-Compose File
+  template: 
+    src: docker-compose.yml.j2
+    dest: '{{ compose_home }}/docker-compose.yml'
+  vars:
+    home: "{{ jenkins_home }}"
+    image: "jenkinsci/jenkins:2.62"
+    host_ip: "{{ ansible_default_ipv4.address }}"
+    timezone: "Europe/London"
+
+- name: Trying Docker-Service
+  docker_service:
+    project_src: '{{ compose_home }}'
+
+- debug: var=jenkins

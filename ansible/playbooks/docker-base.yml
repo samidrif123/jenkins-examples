@@ -1,0 +1,32 @@
+- docker_info:
+
+- block:
+  - name: Add Docker CE Repository
+    yum_repository:
+      name: docker-ce-edge
+      description: Docker CE Repository
+      file: external_repos
+      baseurl: https://download.docker.com/linux/centos/$releasever/$basearch/edge
+      gpgkey: https://download.docker.com/linux/centos/gpg
+      enabled: yes
+
+  - name: Ensure Docker is installed
+    yum: name={{ item }} state=latest
+    with_items:
+    - yum-utils
+    - device-mapper-persistent-data
+    - lvm2
+    - docker-ce
+
+  when: not docker_bin is defined 
+
+- name: Ensure Docker-Compose is installed
+  pip: name=docker-compose
+  when: not docker_compose is defined
+
+- name: Ensure Docker is Up ad Running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+

@@ -1,0 +1,62 @@
+version: '2'
+services:
+  jenkins:
+    restart: always
+    image: "{{ image }}"
+    group_add:
+      - {{ docker_gid }}
+    expose:
+      - "8080"
+    ports:
+      # WEB Interface
+      - "0.0.0.0:8080:8080"
+      
+      - "127.0.0.1:50000:50000"
+
+      # JMX/RMI Ports
+      - "0.0.0.0:12345:12345"
+      - "0.0.0.0:12346:12346"
+
+    volumes:
+      - {{ home }}:{{ home }}
+      # for managing Docker daemon inside Docker
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - {{ docker_bin }}:{{ docker_bin }}
+{% for lib in docker_libs %}
+      - {{ lib }}:/usr/lib/x86_64-linux-gnu/{{ lib | basename }}
+{% endfor %}
+
+    environment:
+      - HOME={{ home }}
+      - JENKINS_HOME={{ home }}
+      - JAVA_OPTS=
+          -Djenkins.install.runSetupWizard=false
+          -Djava.awt.headless=true
+          -Dhudson.plugins.git.GitSCM.verbose=true
+          -XX:+DisableExplicitGC
+          -Xms1000m
+          -Xmx3000m
+          -Dorg.apache.commons.jelly.tags.fmt.timeZone={{ timezone }}
+          -Duser.timezone={{ timezone }}
+          -Dhttps.protocols=TLSv1
+          -Dorg.eclipse.jetty.server.Request.maxFormContentSize=5000000
+          -Dhudson.plugins.parameterizedtrigger.ProjectSpecificParametersActionFactory.compatibility_mode=true
+          -Dpermissive-script-security.enabled=true
+          -XX:MaxMetaspaceSize=1g
+          -XX:+CMSClassUnloadingEnabled
+          -XX:+UseConcMarkSweepGC
+          -Djava.rmi.server.hostname={{ host_ip }}
+          -Dcom.sun.management.jmxremote.local.only=false
+          -Dcom.sun.management.jmxremote.port=12345
+          -Dcom.sun.management.jmxremote.rmi.port=12346
+          -Dcom.sun.management.jmxremote.authenticate=false
+          -Dcom.sun.management.jmxremote.ssl=false
+    logging:
+      driver: syslog
+      options:
+        tag: jenkins
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 20000
+        hard: 40000

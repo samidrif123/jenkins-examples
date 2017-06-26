@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+from ansible.module_utils.basic import AnsibleModule
+from commands import *
+
+
+def run(cmd):
+    output = ""
+    status, output = getstatusoutput(cmd)
+    return output
+
+
+def main():
+    module = AnsibleModule(
+        argument_spec = dict()
+    )
+    docker_bin = run("which docker 2>/dev/null")
+    if docker_bin != "":
+        docker_libs = run("ldd `which docker` | grep '=> /' | awk '{print $3}'").split("\n")
+        docker_gid = run("getent group | grep docker | cut -d':' -f3")
+
+        ansible_facts = {
+            "docker_bin": docker_bin,
+            "docker_libs": docker_libs,
+            "docker_gid": docker_gid
+        }
+
+        docker_compose = run("which docker-compose 2>/dev/null")
+        if docker_compose != "":
+            ansible_facts["docker_compose"] = docker_compose
+
+        module.exit_json(changed=False, installed=True, ansible_facts=ansible_facts)
+    else:
+        module.exit_json(changed=False, installed=False)
+
+if __name__ == '__main__':
+    main()

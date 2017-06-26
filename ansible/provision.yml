@@ -1,0 +1,16 @@
+#!/usr/bin/env ansible-playbook
+
+- hosts: localhost
+  connection: local
+  become: yes
+
+  vars:
+    jenkins_uid: 1000
+    jenkins_gid: 1000
+    compose_home: /var/server/config
+    jenkins_home: /var/server/config/jenkins
+
+  tasks:
+  - include: playbooks/docker-base.yml tag=docker
+  - include: playbooks/jenkins.yml tag=jenkins
+

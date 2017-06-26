@@ -1,0 +1,32 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "sbeliakou/centos-7.3-x86_64-minimal"
+  config.vm.hostname = "jenkins"
+
+  config.vm.network "forwarded_port", guest: 8080, host: 8080
+
+  # config.vm.network "private_network", ip: "192.168.33.10"
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "1024"
+    vb.name = "jenkins"
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+
+    if $(! which ansible &>/dev/null) || [[ ! "$(ansible --version | head -1 | cut -d' ' -f2)" =~ "2.3.1" ]]
+    then
+      yum update -y
+      yum install -y epel-release
+      yum install -y python-pip python-devel gcc openssl-devel
+      pip install -U pip setuptools
+      pip install -U ansible==2.3.1 requests termcolor
+      ansible --version
+    fi
+
+    cd /vagrant 
+    ansible-playbook provision.yml -M playbooks/library -vv
+  SHELL
+end
