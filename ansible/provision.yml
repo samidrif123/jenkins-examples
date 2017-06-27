@@ -5,12 +5,13 @@
   become: yes
 
   vars:
-    jenkins_uid: 1000
-    jenkins_gid: 1000
     compose_home: /var/server/config
-    jenkins_home: /var/server/config/jenkins
 
   tasks:
-  - include: playbooks/docker-base.yml tag=docker
-  - include: playbooks/jenkins.yml tag=jenkins
+  - include: playbooks/docker-base.yml tags=docker
+  - include: playbooks/rsyslog.yml tags=rsyslog
+  - include: playbooks/jenkins.yml tags=jenkins
+    vars:
+      settings:
+        - playbooks/vars/jenkins.yml
 

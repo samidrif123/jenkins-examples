@@ -1,0 +1,65 @@
+jenkins_uid: 1000
+jenkins_gid: 1000
+jenkins_home: "{{ compose_home | mandatory }}/jenkins"
+jenkins_image: "jenkinsci/jenkins:2.62"
+jenkins_port: 8080
+
+jenkins_plugins:
+  - role-strategy
+  - multiple-scms
+  - git
+  - github
+  - github-api
+  - github-oauth
+  - github-pr-coverage-status
+  - github-organization-folder
+  - github-pullrequest
+  - github-pr-comment-build
+  - blueocean
+  - ghprb
+  - rebuild
+  - envinject
+  - managed-scripts
+  - conditional-buildstep
+  - greenballs
+  - workflow-aggregator
+  - matrix-auth
+  - ssh-slaves
+  - monitoring
+  - job-dsl
+  - ansicolor
+  - mask-passwords
+  - build-user-vars-plugin
+  - build-timestamp
+  - uno-choice
+  - email-ext
+  - dynamic_extended_choice_parameter
+  - extensible-choice-parameter
+  - extended-choice-parameter
+  - ws-cleanup
+  - jobConfigHistory
+  - dynamicparameter
+  - Parameterized-Remote-Trigger
+  - timestamper
+  - parameterized-trigger
+  - slack
+  - customize-build-now
+  - permissive-script-security
+  - sonar
+  - groovy-postbuild
+  - show-build-parameters
+  - pipeline-maven
+  - docker-workflow
+  - gradle
+  - pegdown-formatter
+  - antisamy-markup-formatter
+  - credentials-binding
+  - kubernetes-ci
+  - kubernetes
+  - docker-slaves
+  - azure-vm-agents
+  - windows-azure-storage
+  - azure-slave-plugin
+  - azure-credentials
+  - azure-publishersettings-credentials
+  - azure-batch-parallel

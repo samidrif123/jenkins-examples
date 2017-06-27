@@ -1,0 +1,19 @@
+- name: Ensure RSyslog folder exists
+  file:
+    path: "{{ compose_home }}/rsyslog/"
+    recurse: yes
+    state: directory
+
+- name: Configure RSyslog
+  lineinfile: 
+    dest: /etc/rsyslog.d/server.conf
+    regexp: \$IncludeConfig {{ compose_home }}/.*
+    line: $IncludeConfig {{ compose_home }}/rsyslog/rsyslog-*.conf
+    create: yes
+  register: rsyslog_config
+
+- name: Restart RSyslog
+  service: 
+    name: rsyslog
+    state: restarted
+  when: rsyslog_config|changed
