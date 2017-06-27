@@ -4,6 +4,8 @@ jenkins_home: "{{ compose_home | mandatory }}/jenkins"
 jenkins_image: "jenkinsci/jenkins:2.62"
 jenkins_port: 8080
 
+jenkins_syslog_tag: "docker-jenkins"
+
 jenkins_plugins:
   - role-strategy
   - multiple-scms

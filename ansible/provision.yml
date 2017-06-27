@@ -9,7 +9,6 @@
 
   tasks:
   - include: playbooks/docker-base.yml tags=docker
-  - include: playbooks/rsyslog.yml tags=rsyslog
   - include: playbooks/jenkins.yml tags=jenkins
     vars:
       settings:

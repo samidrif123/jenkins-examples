@@ -13,7 +13,7 @@
 - name: Configure Jenkins Logging
   template:
     src: "rsyslog-jenkins.conf.j2"
-    dest: "{{ compose_home }}/rsyslog/"
+    dest: "/etc/rsyslog.d/rsyslog-jenkins.conf"
   register: rsyslog_jenkins
 
 - name: Apply RSyslog for Jenkins
@@ -27,13 +27,16 @@
     docker run --rm 
       -e HOME={{ jenkins_home }} 
       -e REF={{ jenkins_home }}/plugins 
-      -v {{ jenkins_home }}:{{ jenkins_home }} {{ image }} 
+      -v {{ jenkins_home }}:{{ jenkins_home }}
+      --log-driver syslog 
+      --log-opt tag={{ tag }} {{ image }} 
       /usr/local/bin/install-plugins.sh {{ plugins }}
   args:
     creates: "{{ jenkins_home }}/plugins"
   vars:
     image: "{{ jenkins_image }}"
     plugins: '{{ jenkins_plugins | unique | join (" ") }}'
+    tag: "{{ jenkins_syslog_tag }}"
 
 - name: Copy Jenkins Docker-Compose File
   template: 
