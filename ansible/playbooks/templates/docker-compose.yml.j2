@@ -19,13 +19,13 @@ services:
 
     volumes:
       - {{ home }}:{{ home }}
+      
       # for managing Docker daemon inside Docker
       - /var/run/docker.sock:/var/run/docker.sock:rw
       - {{ docker_bin }}:{{ docker_bin }}
 {% for lib in docker_libs %}
       - {{ lib }}:/usr/lib/x86_64-linux-gnu/{{ lib | basename }}
 {% endfor %}
-
     environment:
       - HOME={{ home }}
       - JENKINS_HOME={{ home }}
@@ -54,9 +54,11 @@ services:
     logging:
       driver: syslog
       options:
-        tag: jenkins
+        tag: docker-jenkins
     ulimits:
       nproc: 65535
       nofile:
         soft: 20000
         hard: 40000
+
+
