@@ -10,6 +10,9 @@
     owner: '{{ jenkins_uid }}'
     group: '{{ jenkins_gid }}'
 
+- name: Ensure RSysLog is installed
+  yum: name=rsyslog
+
 - name: Configure Jenkins Logging
   template:
     src: "rsyslog-jenkins.conf.j2"
