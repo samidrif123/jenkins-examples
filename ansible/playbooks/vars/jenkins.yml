@@ -18,6 +18,7 @@ jenkins_plugins:
   - github-pullrequest
   - github-pr-comment-build
   - blueocean
+  - pipeline-model-definition:1.1.8
   - ghprb
   - rebuild
   - envinject
