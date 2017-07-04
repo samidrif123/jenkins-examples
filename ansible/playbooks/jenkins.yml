@@ -25,6 +25,14 @@
     state: restarted
   when: rsyslog_jenkins|changed
 
+- name: Ensure Jenkins SSH folder exists
+  file:
+    path: '{{ jenkins_home }}/.ssh'
+    state: directory
+    owner: '{{ jenkins_uid }}'
+    group: '{{ jenkins_gid }}'
+    mode: 0700
+
 - name: Install Plugins
   shell:
     docker run --rm 
