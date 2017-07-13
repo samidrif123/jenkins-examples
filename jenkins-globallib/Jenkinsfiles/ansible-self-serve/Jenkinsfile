@@ -1,0 +1,72 @@
+@NonCPS
+def bash(script) {
+    "#!/bin/bash\n${script}"
+}
+
+def triggerJob(sha1,futureTag){
+   build job: 'SELFSERVE-ATT-ANSIBLE-deploy-adhoc', parameters: [string(name: 'ANSIBLE_COMMIT', value: sha1 ), string(name: 'ANSIBLE_VERSION', value: futureTag)]
+}
+
+@NonCPS
+def getCurrentEnvVars(envVar) {
+    currentBuild.rawBuild.getEnvVars()[envVar]
+}
+
+def currentSHA1 = getCurrentEnvVars('GITHUB_BRANCH_HEAD_SHA')
+
+node("host-node") {
+   repositoryCommiterEmail = 'jenkins-selfserve@devops.mnscorp.net'
+   repositoryCommiterUsername = 'jenkins-selfserve'
+   stage ("Preparation (Checkout Code)"){
+     checkout scm
+   }
+
+   def prNumber
+   if ( env.GITHUB_BRANCH_NAME == 'develop') {
+       def thisCommit = sh(script: "git log --format=%B -n 1 ${currentSHA1}", returnStdout: true).trim()
+       prNumber = ((thisCommit =~ /\(#(\d+)\)/) ?: (thisCommit =~ /^Merge pull request #(\d+) from/))[0][1]
+   }
+   def futureTag = "v2." + prNumber
+
+   stage ("Defining Env Vars"){
+     println "GITHUB_BRANCH_HEAD_SHA: " + currentSHA1
+     println "GITHUB_PR_NUMBER: " + prNumber
+   }
+   ansible_container = "sbeliakou/ansible:2.2.1-2"
+   ansible = "docker run --rm -v ${WORKSPACE}:${WORKSPACE} -w ${WORKSPACE} ${ansible_container} ansible-playbook -c local -i localhost,"
+
+   sh "docker pull ${ansible_container}"
+
+   ansiColor('xterm') {
+   try {
+          if ( env.GITHUB_BRANCH_NAME == 'develop' && prNumber ){
+              def downstreamJob
+              stage("Triggerring Ansible Deployment"){
+                  downstreamJob = triggerJob(currentSHA1,futureTag)
+              }
+              stage("Tagging"){
+                 if (downstreamJob.result == 'SUCCESS'){
+                        tagMessage = sh(script: bash("git --no-pager show -s --format='%H - Commited by %an, %ad : %s'"), returnStdout: true).trim()
+                        sh """git config user.email "${repositoryCommiterEmail}"
+                              git config user.name "${repositoryCommiterUsername}"
+                              git tag -a ${futureTag} -m "${tagMessage}"
+                              git push origin ${futureTag}
+                           """
+                        if (futureTag) {
+                             manager.addShortText("  TAG:  " + futureTag, "black", "#FFFFE0", "1px", "grey")
+                        }
+                   }
+                }
+             } else {
+                       stage ("Result"){
+                           if (env.GITHUB_BRANCH_NAME != 'develop'){
+                                println "Current BRANCH_NAME is '" + env.GITHUB_BRANCH_NAME + "' As it's not equal to 'develop' automatic deployment and tagging will be skipped."
+                           }
+                           if ( !prNumber ){
+                               println "PR number is not defined"
+                           }
+                       }
+                  }
+          } catch (e) { throw e }
+    }
+}

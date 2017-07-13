@@ -1,0 +1,8 @@
+<strong>help for usage checkOutFrom  method in html format</strong>
+<br><br>
+Example of usage in a Pipeline:
+<br><br>
+<pre>
+  checkOutFrom(repo)
+</pre>
+

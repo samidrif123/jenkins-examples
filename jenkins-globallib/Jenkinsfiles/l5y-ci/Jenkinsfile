@@ -1,0 +1,95 @@
+import java.util.regex.*
+
+/*
+    Environment variables:
+        ${BAKE_BASE}
+        ${PLAYBOOKS_DIR}
+        ${APPLICATION}
+        ${TAGS_GROUP}
+        ${TAGS_PROJECT}
+        ${TAGS_STACK}
+        ${TAGS_ROLE}
+        ${REPO}
+        ${BRANCH}
+*/
+
+node("host-node") {
+
+    stage("Prepare environment"){
+        deleteDir()
+
+        git url: "git@github.com:${env.REPO}.git", branch: env.BRANCH
+
+        dir(env.BAKE_BASE) {
+            // Checking Out "mns-install-aws-bake"
+            checkout([
+                $class: 'GitSCM',
+                branches: [[name: '*/master']],
+                doGenerateSubmoduleConfigurations: false,
+                extensions: [[
+                    $class: 'RelativeTargetDirectory',
+                    relativeTargetDir: '_aws-bake']],  // FIXME: hardcoded path
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[url: 'git@git.devops.mnscorp.net:ansible/mns-install-aws-bake.git']]
+            ])
+
+            // Checking Out "mns-install-roles"
+            checkout([
+                $class: 'GitSCM',
+                branches: [[name: '*/master']],
+                doGenerateSubmoduleConfigurations: false,
+                extensions: [[
+                    $class: 'RelativeTargetDirectory',
+                    relativeTargetDir: '${PLAYBOOKS_DIR}/${APPLICATION}/roles']],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[url: 'git@git.devops.mnscorp.net:ansible/mns-install-roles.git']]
+            ])
+
+            // Checking Out "mns-tools"
+            checkout([
+                $class: 'GitSCM',
+                branches: [[name: '*/master']],
+                doGenerateSubmoduleConfigurations: false,
+                extensions: [[
+                    $class: 'RelativeTargetDirectory',
+                    relativeTargetDir: '${PLAYBOOKS_DIR}/${APPLICATION}/tools']],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [[url: 'git@git.devops.mnscorp.net:ansible/mns-tools.git']]
+            ])
+
+            sh """
+                #!/bin/bash
+                cd ${PLAYBOOKS_DIR}/${APPLICATION}
+                rm -rf library
+                mv tools/library library
+            """
+        }
+    }
+
+    timestamps {
+        ansiColor('xterm') {
+            dir(env.BAKE_BASE) {
+                stage("Bake AMI"){
+                    sh """
+                        bash _default/bake.sh ${PLAYBOOKS_DIR}/${APPLICATION}/${APPLICATION}.yml
+                    """
+                }
+            }
+
+            stage("Mark Build") {
+                try {
+                    def log = currentBuild.build().log
+                    def ami = (log =~ /.*eu-west-1: (.+)/)[-1][1]
+                    if (ami != "") {
+                        manager.addShortText(ami, "black", "yellow", "1px", "grey")
+                    }
+                } catch(err) {}
+            }
+        }
+    }
+
+    stage("Cleanup"){
+        deleteDir()
+    }
+}
+
