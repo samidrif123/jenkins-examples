@@ -1,0 +1,11 @@
+node{
+  try {		
+     currentBuild.result = 'SUCCESS'		
+  } catch (Exception err) {		
+     currentBuild.result = 'FAILURE'		
+  }
+  jenkinsNotifications{
+    recipients = 'gleb.skuratov2013@gmail.com'
+    type = "deploy"
+  }
+}

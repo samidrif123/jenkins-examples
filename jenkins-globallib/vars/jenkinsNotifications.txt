@@ -1,0 +1,10 @@
+<strong>help for usage of this jenkinsNotifications method in html format</strong>
+<br><br>
+Example of usage in a Pipeline:
+<br><br>
+<pre>
+  jenkinsNotifications{
+    recipients = 'test@test.com,test2@test.com'    // 
+    type = "deploy"             // Type of notification 
+    message = "custom message "
+</pre>
