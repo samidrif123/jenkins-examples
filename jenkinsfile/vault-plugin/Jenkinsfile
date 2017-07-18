@@ -1,0 +1,28 @@
+node {
+    def secrets = [
+        [
+            $class: 'VaultSecret', path: 'secret/epam/password', secretValues: [
+                [$class: 'VaultSecretValue', envVar: 'password', vaultKey: 'value']
+            ]
+        ],
+
+        [
+            $class: 'VaultSecret', path 'secret/sp5/secretfile', secretValues: [
+                [$class: 'VaultSecretValue', envVar: 'filename', vaultKey: 'name'],
+                [$class: 'VaultSecretValue', envVar: 'file', vaultKey: 'value']
+            ]
+        ]
+    ]
+    
+    def configuration = [
+        $class: 'VaultConfiguration',
+        vaultCredentialId: 'VAULT_TOKEN_ID',
+        vaultUrl: 'http://vault_url'
+    ]
+    
+    wrap([$class: 'VaultBuildWrapper', configuration: configuration, vaultSecrets: secrets]) {
+        sh 'echo $password'
+        sh 'echo $file > $filename' // save file
+        
+    }
+}
