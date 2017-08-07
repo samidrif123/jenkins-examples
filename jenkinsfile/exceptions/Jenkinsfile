@@ -10,12 +10,6 @@ node {
             echo "never run"
         }
         // currentBuild.result = 'SUCCESS'
-    } catch (hudson.AbortException err) {
-        print("""
-            Build ABORTED on stage: ${stage}
-            Trace: $err
-        """)
-        throw err
     } catch (Exception err) {
         // currentBuild.result = 'FAILURE'
         print("Failed on stage: ${stage}")
