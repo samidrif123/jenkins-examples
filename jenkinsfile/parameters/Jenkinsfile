@@ -1,12 +1,41 @@
 // https://jenkins.io/doc/book/pipeline/jenkinsfile/#parameters
+// https://jenkins.io/doc/book/pipeline/syntax/#parameters
+// https://jenkinsci.github.io/job-dsl-plugin/#path/job-parameters
+
+@NonCPS
+def printBuildParams(){
+    def buildParams = currentBuild.rawBuild.getAction(ParametersAction.class)
+    if ( buildParams != null ) {
+        println ("---=== Build triggered with the following parameters ===---")
+        for(ParameterValue p in buildParams) {
+            println p.name + ' = ' + p.value
+        }
+    } else {
+        println ("---=== Build triggered WITHOUT parameters ===---")
+    }
+    println("---=== === === === ===---")
+}
+
 node {
     properties([
         parameters([
-            string(defaultValue: 'Hello', description: 'How should I greet the world?', name: 'Greeting')
+            stringParam(name: 'STRING_PARAM', defaultValue: 'Hello', description: 'How should I greet the world?'),
+            booleanParam(name: 'BOOL_PARAM', defaultValue: true, description: ''),
+            choiceParam(name: 'CHOICE_PARAM', choices: 'Build\nDocker\nDeploy', description: 'First stage to start', defaultValue: 'Build'),
+            nonStoredPasswordParam(name: 'PASSWD_PARAM', description: 'description'),
+            textParam(name: 'TEXT_PARAM', defaultValue: 'my default textParam value', description: 'my description')
         ])
     ])
 
+    stage("Debug Build Parameters"){
+        printBuildParams()
+    }
+
     stage("Test Parameters"){
-        echo "${Greeting}"
+        echo "${STRING_PARAM}"
+        echo "${BOOL_PARAM}"
+        echo "${CHOICE_PARAM}"
+        echo "${PASSWD_PARAM}"
+        echo "${TEXT_PARAM}"
     }
 }
