@@ -1,0 +1,12 @@
+// https://jenkins.io/doc/book/pipeline/jenkinsfile/#parameters
+node {
+    properties([
+        parameters([
+            string(defaultValue: 'Hello', description: 'How should I greet the world?', name: 'Greeting')
+        ])
+    ])
+
+    stage("Test Parameters"){
+        echo "${Greeting}"
+    }
+}
