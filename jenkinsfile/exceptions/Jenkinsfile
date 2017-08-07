@@ -15,9 +15,11 @@ node {
             Build ABORTED on stage: ${stage}
             Trace: $err
         """)
+        throw err
     } catch (Exception err) {
-        print("Failed on stage: ${stage}")
         // currentBuild.result = 'FAILURE'
+        print("Failed on stage: ${stage}")
+        throw err
     } finally {
         stage("Always Run"){
             print("Always Run")
