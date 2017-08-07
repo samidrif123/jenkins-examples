@@ -1,0 +1,26 @@
+node {
+    try {
+        stage("Issue Here"){
+            stage = "Issue Here"
+            sh "exit 1"
+        }
+
+        stage("Never Run"){
+            stage = "Never Run"
+            echo "never run"
+        }
+        // currentBuild.result = 'SUCCESS'
+    } catch (hudson.AbortException err) {
+        print("""
+            Build ABORTED on stage: ${stage}
+            Trace: $err
+        """)
+    } catch (Exception err) {
+        print("Failed on stage: ${stage}")
+        // currentBuild.result = 'FAILURE'
+    } finally {
+        stage("Always Run"){
+            print("Always Run")
+        }
+    }
+}
