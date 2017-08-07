@@ -9,10 +9,11 @@ node {
             stage = "Never Run"
             echo "never run"
         }
-        // currentBuild.result = 'SUCCESS'
-    } catch (Exception err) {
-        // currentBuild.result = 'FAILURE'
+    } catch (Exception | hudson.AbortException err) {
         print("Failed on stage: ${stage}")
+        if(err.class == hudson.AbortException) {
+            println("ABORTED!!!! ${err}")
+        } else {println("SGW!!! ${err.getProperties()}")}
         throw err
     } finally {
         stage("Always Run"){
