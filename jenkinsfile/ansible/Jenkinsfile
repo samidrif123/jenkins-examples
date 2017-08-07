@@ -1,0 +1,15 @@
+node {
+    stage("With Shell") {
+        withEnv([
+            "ANSIBLE_FORCE_COLOR=true", 
+            "PYTHONUNBUFFERED=1"
+        ]) { 
+            ansiColor('xterm') {
+                sh "ansible-playbook ..."
+            }
+        }
+    }
+    stage("With Ansible Plugin"){
+        echo "TODO"
+    }
+}
